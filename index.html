@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>오늘의 색 🌈 - 로그인</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body data-page="auth">
+
+<div class="auth-wrapper">
+  <div class="auth-card">
+
+    <div class="auth-header">
+      <div class="app-logo">🌈</div>
+      <h1 class="app-title">오늘의 색</h1>
+      <p class="app-subtitle">오늘 기분을 색으로 기록해보세요</p>
+    </div>
+
+    <!-- 로그인 -->
+    <section id="login-container">
+      <h2 class="auth-title">로그인</h2>
+      <form id="login-form" class="auth-form">
+        <input type="text" id="login-username" placeholder="아이디" required>
+        <input type="password" id="login-password" placeholder="비밀번호" required>
+        <button type="submit" class="btn-primary full-width">로그인</button>
+      </form>
+      <p class="auth-switch">
+        아직 계정이 없나요?
+        <button type="button" id="go-signup" class="link-button">회원가입</button>
+      </p>
+    </section>
+
+    <!-- 회원가입 -->
+    <section id="signup-container" class="hidden">
+      <h2 class="auth-title">회원가입</h2>
+
+      <form id="signup-form" class="auth-form">
+
+        <!-- 아이디 입력 + 중복확인 -->
+        <div class="id-check-row">
+          <input type="text" id="signup-username" placeholder="아이디" required>
+          <button type="button" id="check-duplicate" class="btn-small">중복확인</button>
+        </div>
+
+        <p id="id-check-result" class="check-result"></p>
+
+        <!-- 비밀번호 입력 -->
+        <input type="password" id="signup-password" placeholder="비밀번호 : 6자 이상, 영어 포함, 숫자 포함" required>
+
+        <!-- 비밀번호 규칙 실시간 표시 -->
+       
+
+        <input type="password" id="signup-confirm" placeholder="비밀번호 확인" required>
+
+
+        <button type="submit" class="btn-primary full-width">회원가입</button>
+      </form>
+
+      <p class="auth-switch">
+        이미 계정이 있나요?
+        <button type="button" id="go-login" class="link-button">로그인</button>
+      </p>
+
+    </section>
+
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

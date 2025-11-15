@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>오늘의 색 🌈</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body data-page="main">
+
+<header class="app-header">
+  <div class="header-left">
+    <span class="header-logo">🌈</span>
+    <span class="header-title">오늘의 색</span>
+  </div>
+  <div class="header-right">
+    <span id="welcome-name" class="welcome-text"></span>
+    <button id="logout-btn" class="btn-secondary">로그아웃</button>
+  </div>
+</header>
+
+<main class="app-main">
+
+  <!-- 달력 카드 -->
+  <section class="card">
+    <div class="calendar-header">
+      <button id="prev-month" class="month-btn">◀</button>
+      <h2 id="month-title" class="month-title">0000년 00월</h2>
+      <button id="next-month" class="month-btn">▶</button>
+    </div>
+    <div id="calendar"></div>
+  </section>
+
+  <!-- 감정 + 메모 + 투두 -->
+  <section class="card hidden" id="emotion-section">
+    <div class="emotion-buttons">
+      <button class="emotion" data-emotion="행복" data-color="#FFD93D">행복</button>
+      <button class="emotion" data-emotion="평온" data-color="#A3D8F4">평온</button>
+      <button class="emotion" data-emotion="우울" data-color="#6A5ACD">우울</button>
+      <button class="emotion" data-emotion="분노" data-color="#FF6B6B">분노</button>
+      <button class="emotion" data-emotion="피곤" data-color="#B0BEC5">피곤</button>
+    </div>
+
+    <label class="section-label">메모</label>
+    <textarea id="memo" placeholder="오늘의 메모를 남겨보세요..."></textarea>
+
+    <div class="todo-section">
+      <label class="section-label">투두 리스트</label>
+      <div class="todo-input-row">
+        <input id="todo-input" type="text" placeholder="할 일을 입력하세요..." />
+        <button id="add-todo" type="button" class="btn-primary btn-small">추가</button>
+      </div>
+      <ul id="todo-list"></ul>
+    </div>
+
+    <div class="btn-row">
+      <button id="save-mood" class="btn-primary">저장</button>
+      <button id="delete-mood" class="btn-danger hidden">삭제</button>
+    </div>
+  </section>
+
+  <!-- 감정 통계 -->
+  <button id="show-stats" class="btn-primary full-width">감정 통계 보기</button>
+
+  <section class="card hidden" id="stats-section">
+    <h2>감정 통계</h2>
+    <canvas id="moodChart"></canvas>
+    <p id="mood-analysis" class="analysis-text"></p>
+  </section>
+
+</main>
+
+<!-- 연/월 선택 오버레이 -->
+<div id="month-overlay" class="overlay hidden">
+  <div class="overlay-inner" id="overlay-inner">
+
+    <div id="year-select-view">
+      <h2>연도를 선택하세요</h2>
+      <div id="year-list" class="year-grid"></div>
+      <button id="overlay-close" class="overlay-close-btn">닫기</button>
+    </div>
+
+    <div id="month-select-view" class="hidden">
+      <h2 id="selected-year-title">0000년</h2>
+      <div class="month-grid"></div>
+      <div class="overlay-bottom-row">
+        <button id="back-to-year" class="overlay-sub-btn">연도 다시 선택</button>
+        <button id="overlay-close-2" class="overlay-close-btn">닫기</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
