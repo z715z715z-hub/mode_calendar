@@ -1,13 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
   const page = document.body.dataset.page;
-  if (page === "auth") initAuth();
-  if (page === "main") initMain();
+
+  if (page === "auth") initAuthPage();
+  if (page === "main") initMainPage();
 });
 
-/* ================================
-   로그인 / 회원가입
-================================ */
-function initAuth() {
+/* ======================================
+      🔐 로그인 / 회원가입
+====================================== */
+function initAuthPage() {
   const loginForm = document.getElementById("login-form");
   const signupForm = document.getElementById("signup-form");
 
@@ -21,12 +22,12 @@ function initAuth() {
   const pwInput = document.getElementById("signup-password");
   const pwConfirm = document.getElementById("signup-confirm");
 
-  const duplicateBtn = document.getElementById("check-duplicate");
-  const duplicateMsg = document.getElementById("id-check-result");
+  const checkBtn = document.getElementById("check-duplicate");
+  const checkResult = document.getElementById("id-check-result");
 
-  const ruleLen = document.getElementById("pw-length");
-  const ruleAlpha = document.getElementById("pw-alpha");
-  const ruleNum = document.getElementById("pw-number");
+  const pwLength = document.getElementById("pw-length");
+  const pwAlpha  = document.getElementById("pw-alpha");
+  const pwNumber = document.getElementById("pw-number");
 
   let idChecked = false;
 
@@ -41,54 +42,60 @@ function initAuth() {
   };
 
   /* 아이디 중복확인 */
-  duplicateBtn.onclick = () => {
-    const id = idInput.value.trim();
-    if (!id) {
-      duplicateMsg.textContent = "아이디를 입력하세요.";
-      duplicateMsg.style.color = "#e74c3c";
+  checkBtn.onclick = () => {
+    const username = idInput.value.trim();
+
+    if (!username) {
+      checkResult.textContent = "아이디를 입력해주세요.";
+      checkResult.style.color = "#e74c3c";
       idChecked = false;
       return;
     }
 
-    if (localStorage.getItem("user_" + id)) {
-      duplicateMsg.textContent = "이미 존재하는 아이디입니다.";
-      duplicateMsg.style.color = "#e74c3c";
+    if (localStorage.getItem("user_" + username)) {
+      checkResult.textContent = "이미 존재하는 아이디입니다.";
+      checkResult.style.color = "#e74c3c";
       idChecked = false;
     } else {
-      duplicateMsg.textContent = "사용 가능한 아이디입니다.";
-      duplicateMsg.style.color = "#2ecc71";
+      checkResult.textContent = "사용 가능한 아이디입니다.";
+      checkResult.style.color = "#2ecc71";
       idChecked = true;
     }
   };
 
-  /* 비밀번호 규칙 실시간 표시 */
+  /* 비밀번호 규칙 실시간 체크 */
   pwInput.addEventListener("input", () => {
     const pw = pwInput.value;
-    apply(ruleLen, pw.length >= 6);
-    apply(ruleAlpha, /[A-Za-z]/.test(pw));
-    apply(ruleNum, /\d/.test(pw));
+    const hasAlpha = /[A-Za-z]/.test(pw);
+    const hasNumber = /\d/.test(pw);
+    const longEnough = pw.length >= 6;
+
+    applyRuleStyle(pwLength, longEnough);
+    applyRuleStyle(pwAlpha, hasAlpha);
+    applyRuleStyle(pwNumber, hasNumber);
   });
 
-  function apply(el, ok) {
+  function applyRuleStyle(el, passed) {
     el.classList.remove("pass", "fail");
-    el.classList.add(ok ? "pass" : "fail");
+    el.classList.add(passed ? "pass" : "fail");
   }
 
   /* 회원가입 */
   signupForm.onsubmit = (e) => {
     e.preventDefault();
-    const id = idInput.value.trim();
-    const pw = pwInput.value.trim();
-    const cf = pwConfirm.value.trim();
+
+    const user = idInput.value.trim();
+    const pw   = pwInput.value.trim();
+    const cf   = pwConfirm.value.trim();
 
     if (!idChecked) {
       alert("아이디 중복확인을 해주세요.");
       return;
     }
 
-    const rule = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
-    if (!rule.test(pw)) {
-      alert("비밀번호 규칙을 확인해 주세요.");
+    const pwRule = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+    if (!pwRule.test(pw)) {
+      alert("비밀번호는 영어, 숫자를 포함하여 6자 이상이어야 합니다.");
       return;
     }
 
@@ -97,8 +104,8 @@ function initAuth() {
       return;
     }
 
-    localStorage.setItem("user_" + id, pw);
-    alert("회원가입이 완료되었습니다.");
+    localStorage.setItem("user_" + user, pw);
+    alert("회원가입이 완료되었습니다. 로그인해주세요.");
 
     signupContainer.classList.add("hidden");
     loginContainer.classList.remove("hidden");
@@ -107,23 +114,24 @@ function initAuth() {
   /* 로그인 */
   loginForm.onsubmit = (e) => {
     e.preventDefault();
-    const id = document.getElementById("login-username").value.trim();
+    const username = document.getElementById("login-username").value.trim();
     const pw = document.getElementById("login-password").value.trim();
 
-    const saved = localStorage.getItem("user_" + id);
+    const saved = localStorage.getItem("user_" + username);
+
     if (saved === pw) {
-      sessionStorage.setItem("currentUser", id);
+      sessionStorage.setItem("currentUser", username);
       location.href = "main.html";
     } else {
-      alert("아이디 또는 비밀번호가 틀렸습니다.");
+      alert("아이디 또는 비밀번호가 올바르지 않습니다.");
     }
   };
 }
 
-/* ================================
-   메인 페이지
-================================ */
-function initMain() {
+/* ======================================
+                🌈 메인 페이지
+====================================== */
+function initMainPage() {
   const user = sessionStorage.getItem("currentUser");
   if (!user) return location.href = "index.html";
 
@@ -143,92 +151,174 @@ function initMain() {
   let selectedEmotion = null;
 
   const calendar = document.getElementById("calendar");
+  const emotionSection = document.getElementById("emotion-section");
   const memo = document.getElementById("memo");
   const deleteBtn = document.getElementById("delete-mood");
-  const emotionSection = document.getElementById("emotion-section");
   const monthTitle = document.getElementById("month-title");
 
-  /* 투두 */
   const todoInput = document.getElementById("todo-input");
-  const todoList = document.getElementById("todo-list");
+  const addTodoBtn = document.getElementById("add-todo");
+  const todoListEl = document.getElementById("todo-list");
 
-  /* 감정 선택 버튼 색상 수정 */
-  document.querySelectorAll(".emotion").forEach(btn => {
-    if (btn.dataset.emotion === "우울") btn.dataset.color = "#87CEFA";
-    if (btn.dataset.emotion === "평온") btn.dataset.color = "#66BB6A";
-  });
+  const statsBtn = document.getElementById("show-stats");
+  const statsSection = document.getElementById("stats-section");
+  const moodAnalysis = document.getElementById("mood-analysis");
 
-  /* 월 이동 */
-  document.getElementById("prev-month").onclick = () => changeMonth(-1);
-  document.getElementById("next-month").onclick = () => changeMonth(1);
+  /* 오버레이 */
+  const overlay = document.getElementById("month-overlay");
+  const overlayInner = document.getElementById("overlay-inner");
+  const yearSelectView = document.getElementById("year-select-view");
+  const monthSelectView = document.getElementById("month-select-view");
+  const yearList = document.getElementById("year-list");
+  const selectedYearTitle = document.getElementById("selected-year-title");
+  const monthGrid = document.querySelector(".month-grid");
+  const overlayClose = document.getElementById("overlay-close");
+  const overlayClose2 = document.getElementById("overlay-close-2");
+  const backToYearBtn = document.getElementById("back-to-year");
 
-  function changeMonth(diff) {
-    current.setMonth(current.getMonth() + diff);
-    renderCalendar();
+  const START_YEAR = 2025;
+  const END_YEAR = 2070;
+  let selectedYearForOverlay = current.getFullYear();
+
+  function saveMoods() {
+    localStorage.setItem("moods_" + user, JSON.stringify(moods));
   }
 
-  /* 요일 추가 */
-  const weekdaysEl = document.createElement("div");
-  weekdaysEl.className = "calendar-weekdays";
-  weekdaysEl.innerHTML = `
-      <div>일</div><div>월</div><div>화</div>
-      <div>수</div><div>목</div><div>금</div><div>토</div>`;
-  calendar.before(weekdaysEl);
+  /* 초기 렌더 */
+  renderCalendar();
 
-  /* 달력 렌더링 */
+  /* 월 이동 */
+  document.getElementById("prev-month").onclick = () => {
+    current.setMonth(current.getMonth() - 1);
+    renderCalendar();
+    autoUpdateStats();
+    emotionSection.classList.add("hidden");
+  };
+
+  document.getElementById("next-month").onclick = () => {
+    current.setMonth(current.getMonth() + 1);
+    renderCalendar();
+    autoUpdateStats();
+    emotionSection.classList.add("hidden");
+  };
+
+  /* 제목 클릭 → 연/월 선택 */
+  monthTitle.onclick = () => openOverlay();
+
+  function openOverlay() {
+    overlay.classList.remove("hidden");
+    yearSelectView.classList.remove("hidden");
+    monthSelectView.classList.add("hidden");
+  }
+
+  overlayClose.onclick = () => overlay.classList.add("hidden");
+  overlayClose2.onclick = () => overlay.classList.add("hidden");
+  overlayInner.addEventListener("click", (e) => e.stopPropagation());
+  overlay.addEventListener("click", () => overlay.classList.add("hidden"));
+
+  /* 연도 버튼 생성 */
+  yearList.innerHTML = "";
+  for (let y = START_YEAR; y <= END_YEAR; y++) {
+    const btn = document.createElement("button");
+    btn.className = "year-btn";
+    btn.textContent = y + "년";
+    btn.onclick = () => {
+      selectedYearForOverlay = y;
+      showMonthSelectView();
+    };
+    yearList.appendChild(btn);
+  }
+
+  /* 월 버튼 생성 */
+  monthGrid.innerHTML = "";
+  for (let m = 1; m <= 12; m++) {
+    const btn = document.createElement("button");
+    btn.className = "month-select-btn";
+    btn.textContent = m + "월";
+    btn.onclick = () => {
+      current = new Date(selectedYearForOverlay, m - 1, 1);
+      renderCalendar();
+      autoUpdateStats();
+      overlay.classList.add("hidden");
+      emotionSection.classList.add("hidden");
+    };
+    monthGrid.appendChild(btn);
+  }
+
+  function showMonthSelectView() {
+    selectedYearTitle.textContent = `${selectedYearForOverlay}년`;
+    yearSelectView.classList.add("hidden");
+    monthSelectView.classList.remove("hidden");
+  }
+
+  backToYearBtn.onclick = () => {
+    monthSelectView.classList.add("hidden");
+    yearSelectView.classList.remove("hidden");
+  };
+
+  /* =======================
+        달력 렌더링
+  ======================= */
   function renderCalendar() {
     const y = current.getFullYear();
     const m = current.getMonth();
-    monthTitle.textContent = `${y}년 ${m + 1}월`;
+    const firstDay = new Date(y, m, 1).getDay();        // 0=일 ~ 6=토
+    const lastDate = new Date(y, m + 1, 0).getDate();
 
+    monthTitle.textContent = `${y}년 ${m + 1}월`;
     calendar.innerHTML = "";
 
-    const firstDay = new Date(y, m, 1).getDay();
-    const last = new Date(y, m + 1, 0).getDate();
-
-    /* 시작 요일까지 빈칸 */
+    /* 앞쪽 빈 칸 (시작 요일 반영) */
     for (let i = 0; i < firstDay; i++) {
-      const empty = document.createElement("div");
-      empty.className = "calendar-day empty";
-      calendar.appendChild(empty);
+      const emptyCell = document.createElement("div");
+      emptyCell.className = "calendar-day empty";
+      calendar.appendChild(emptyCell);
     }
 
-    /* 날짜 생성 */
-    for (let i = 1; i <= last; i++) {
-      const dateKey = `${y}-${m + 1}-${i}`;
-      const data = moods[dateKey] || {};
-      const todos = data.todos || [];
+    /* 날짜 칸 */
+    for (let d = 1; d <= lastDate; d++) {
+      const dateKey = `${y}-${m + 1}-${d}`;
+      const dayData = moods[dateKey] || {};
+      const todos = Array.isArray(dayData.todos) ? dayData.todos : [];
 
       const cell = document.createElement("div");
       cell.className = "calendar-day";
 
-      /* 숫자 */
-      const dayNum = document.createElement("div");
-      dayNum.className = "day-number";
-      dayNum.textContent = i;
+      const num = document.createElement("div");
+      num.className = "day-number";
+      num.textContent = d;
 
-      /* 메모 미리보기 */
-      const memoPreview = document.createElement("div");
-      memoPreview.className = "day-memo";
-      memoPreview.textContent = data.memo || "";
+      const memoText = document.createElement("div");
+      memoText.className = "day-memo";
+      memoText.textContent = dayData.memo ? dayData.memo.slice(0, 12) : "";
 
-      /* 투두 미리보기 */
-      todos.forEach((t, index) => {
-        if (index >= 3) return;
+      const todosWrap = document.createElement("div");
+      todosWrap.className = "day-todos";
+
+      todos.forEach((todo, idx) => {
+        if (idx >= 3) return;
         const span = document.createElement("span");
         span.className = "day-todo-item";
-        if (t.done) span.classList.add("done");
-        span.textContent = t.text;
-        cell.appendChild(span);
+        if (todo.done) span.classList.add("done");
+        span.textContent = todo.text;
+        todosWrap.appendChild(span);
       });
 
-      if (data.color) {
-        cell.style.background = data.color;
-        cell.style.color = "white";
+      if (todos.length > 3) {
+        const more = document.createElement("span");
+        more.className = "day-todo-item";
+        more.textContent = `+${todos.length - 3}개 더`;
+        todosWrap.appendChild(more);
       }
 
-      cell.appendChild(dayNum);
-      if (data.memo) cell.appendChild(memoPreview);
+      if (dayData.color) {
+        cell.style.background = dayData.color;
+        cell.style.color = "#fff";
+      }
+
+      cell.appendChild(num);
+      cell.appendChild(memoText);
+      cell.appendChild(todosWrap);
 
       cell.onclick = () => selectDate(dateKey, cell);
 
@@ -236,39 +326,62 @@ function initMain() {
     }
   }
 
-  renderCalendar();
-
+  /* 날짜 선택 */
   function selectDate(dateKey, cell) {
-    selectedDate = dateKey;
-
     document.querySelectorAll(".calendar-day")
-      .forEach(c => c.classList.remove("selected-day"));
-    cell.classList.add("selected-day");
+      .forEach(d => d.classList.remove("selected-day"));
+    if (!cell.classList.contains("empty")) {
+      cell.classList.add("selected-day");
+    }
 
+    selectedDate = dateKey;
     emotionSection.classList.remove("hidden");
 
-    const data = moods[dateKey] || {};
+    const data = moods[dateKey];
 
-    memo.value = data.memo || "";
+    if (data) {
+      memo.value = data.memo || "";
+      selectedEmotion = data.emotion && data.color
+        ? { emotion: data.emotion, color: data.color }
+        : null;
 
-    document.querySelectorAll(".emotion").forEach(btn => {
-      btn.classList.remove("selected");
-      if (btn.dataset.emotion === data.emotion) {
-        btn.classList.add("selected");
-        selectedEmotion = { emotion: data.emotion, color: data.color };
-      }
-    });
+      document.querySelectorAll(".emotion").forEach(btn => {
+        btn.classList.remove("selected");
+        btn.style.backgroundColor = "#f9fafb";
+        btn.style.color = "#333";
+        if (selectedEmotion && btn.dataset.emotion === selectedEmotion.emotion) {
+          btn.classList.add("selected");
+          btn.style.backgroundColor = selectedEmotion.color;
+          btn.style.color = "#fff";
+        }
+      });
 
-    deleteBtn.classList.toggle("hidden", !moods[dateKey]);
+      deleteBtn.classList.remove("hidden");
+    } else {
+      memo.value = "";
+      selectedEmotion = null;
+      deleteBtn.classList.add("hidden");
+      document.querySelectorAll(".emotion").forEach(btn => {
+        btn.classList.remove("selected");
+        btn.style.backgroundColor = "#f9fafb";
+        btn.style.color = "#333";
+      });
+    }
 
-    renderTodos();
+    renderTodoList();
   }
 
-  /* 감정 선택 */
+  /* 감정 버튼 */
   document.querySelectorAll(".emotion").forEach(btn => {
     btn.onclick = () => {
-      document.querySelectorAll(".emotion").forEach(b => b.classList.remove("selected"));
+      document.querySelectorAll(".emotion").forEach(b => {
+        b.classList.remove("selected");
+        b.style.backgroundColor = "#f9fafb";
+        b.style.color = "#333";
+      });
       btn.classList.add("selected");
+      btn.style.backgroundColor = btn.dataset.color;
+      btn.style.color = "#fff";
 
       selectedEmotion = {
         emotion: btn.dataset.emotion,
@@ -277,83 +390,93 @@ function initMain() {
     };
   });
 
-  function saveAll() {
-    localStorage.setItem("moods_" + user, JSON.stringify(moods));
-  }
-
-  /* 투두 리스트 */
-  document.getElementById("add-todo").onclick = addTodo;
-  todoInput.addEventListener("keydown", e => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addTodo();
-    }
-  });
-
-  function addTodo() {
+  /* =======================
+        투두 리스트
+  ======================= */
+  function renderTodoList() {
+    todoListEl.innerHTML = "";
     if (!selectedDate) return;
-    const text = todoInput.value.trim();
-    if (!text) return;
 
-    if (!moods[selectedDate]) moods[selectedDate] = {};
-    if (!Array.isArray(moods[selectedDate].todos)) moods[selectedDate].todos = [];
+    const dayData = moods[selectedDate] || {};
+    const todos = Array.isArray(dayData.todos) ? dayData.todos : [];
 
-    moods[selectedDate].todos.push({ text, done: false });
-    todoInput.value = "";
-
-    saveAll();
-    renderTodos();
-    renderCalendar();
-  }
-
-  function renderTodos() {
-    if (!selectedDate) return;
-    const todos = moods[selectedDate]?.todos || [];
-    todoList.innerHTML = "";
-
-    todos.forEach((todo, idx) => {
+    todos.forEach((todo, index) => {
       const li = document.createElement("li");
       li.className = "todo-item";
 
-      const text = document.createElement("span");
-      text.className = "todo-text";
-      if (todo.done) text.classList.add("done");
-      text.textContent = todo.text;
+      const completeBtn = document.createElement("button");
+      completeBtn.className = "todo-complete-btn";
+      completeBtn.textContent = todo.done ? "되돌리기" : "완료";
 
-      const doneBtn = document.createElement("button");
-      doneBtn.className = "todo-complete-btn";
-      doneBtn.textContent = todo.done ? "되돌리기" : "완료";
+      const textSpan = document.createElement("span");
+      textSpan.className = "todo-text";
+      if (todo.done) textSpan.classList.add("done");
+      textSpan.textContent = todo.text;
 
-      const delBtn = document.createElement("button");
-      delBtn.className = "todo-delete-btn";
-      delBtn.textContent = "삭제";
+      const deleteBtnTodo = document.createElement("button");
+      deleteBtnTodo.className = "todo-delete-btn";
+      deleteBtnTodo.textContent = "삭제";
 
-      doneBtn.onclick = () => {
-        todo.done = !todo.done;
-        saveAll();
-        renderTodos();
+      completeBtn.onclick = () => {
+        const d = moods[selectedDate] || {};
+        if (!Array.isArray(d.todos)) d.todos = [];
+        d.todos[index].done = !d.todos[index].done;
+        moods[selectedDate] = d;
+        saveMoods();
+        renderTodoList();
         renderCalendar();
       };
 
-      delBtn.onclick = () => {
-        todos.splice(idx, 1);
-        saveAll();
-        renderTodos();
+      deleteBtnTodo.onclick = () => {
+        const d = moods[selectedDate] || {};
+        if (!Array.isArray(d.todos)) d.todos = [];
+        d.todos.splice(index, 1);
+        moods[selectedDate] = d;
+        saveMoods();
+        renderTodoList();
         renderCalendar();
       };
 
-      li.appendChild(doneBtn);
-      li.appendChild(text);
-      li.appendChild(delBtn);
-
-      todoList.appendChild(li);
+      li.appendChild(completeBtn);
+      li.appendChild(textSpan);
+      li.appendChild(deleteBtnTodo);
+      todoListEl.appendChild(li);
     });
   }
 
-  /* 저장 */
+  addTodoBtn.onclick = handleAddTodo;
+  todoInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddTodo();
+    }
+  });
+
+  function handleAddTodo() {
+    if (!selectedDate) {
+      alert("먼저 날짜를 선택해주세요.");
+      return;
+    }
+    const text = todoInput.value.trim();
+    if (!text) return;
+
+    const dayData = moods[selectedDate] || {};
+    if (!Array.isArray(dayData.todos)) dayData.todos = [];
+    dayData.todos.push({ text, done: false });
+    moods[selectedDate] = dayData;
+
+    saveMoods();
+    todoInput.value = "";
+    renderTodoList();
+    renderCalendar();
+  }
+
+  /* =======================
+        감정 저장 / 삭제
+  ======================= */
   document.getElementById("save-mood").onclick = () => {
     if (!selectedDate || !selectedEmotion) {
-      alert("날짜와 감정을 선택하세요.");
+      alert("날짜와 감정을 선택해주세요.");
       return;
     }
 
@@ -362,24 +485,35 @@ function initMain() {
       emotion: selectedEmotion.emotion,
       color: selectedEmotion.color,
       memo: memo.value,
-      todos: prev.todos || []
+      todos: Array.isArray(prev.todos) ? prev.todos : []
     };
 
-    saveAll();
+    saveMoods();
+    deleteBtn.classList.remove("hidden");
     renderCalendar();
+    autoUpdateStats();
   };
 
-  /* 삭제 */
   deleteBtn.onclick = () => {
     if (!selectedDate) return;
-    if (!confirm("이 날짜의 기록을 삭제할까요?")) return;
+    if (!confirm("이 날짜의 기록을 모두 삭제할까요?")) return;
 
     delete moods[selectedDate];
-    saveAll();
-    renderCalendar();
-    emotionSection.classList.add("hidden");
-  };
+    saveMoods();
 
+    memo.value = "";
+    selectedEmotion = null;
+    deleteBtn.classList.add("hidden");
+    document.querySelectorAll(".emotion").forEach(b => {
+      b.classList.remove("selected");
+      b.style.backgroundColor = "#f9fafb";
+      b.style.color = "#333";
+    });
+
+    todoListEl.innerHTML = "";
+    renderCalendar();
+    autoUpdateStats();
+  };
 
   /* =======================
         감정 통계
@@ -424,8 +558,7 @@ function initMain() {
         datasets: [{
           data: Object.values(monthly),
           backgroundColor: Object.keys(monthly).map(emotion => {
-            const entry = Object.values(moods)
-              .find(v => v.emotion === emotion);
+            const entry = Object.values(moods).find(v => v.emotion === emotion);
             return entry?.color || "#ccc";
           })
         }]
@@ -464,7 +597,7 @@ function initMain() {
     if (
       !emotionSection.classList.contains("hidden") &&
       !emotionSection.contains(e.target) &&
-      !calendarDays.contains(e.target)
+      !calendar.contains(e.target)
     ) {
       emotionSection.classList.add("hidden");
     }
